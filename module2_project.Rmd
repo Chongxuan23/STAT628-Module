@@ -60,6 +60,7 @@ theme(
 
 ```
 ```{r}
+library(caret)
 training_index = createDataPartition(data$BODYFAT, p = 0.8, list = F)
 training = data[training_index,]
 testing = data[-training_index,]
@@ -79,8 +80,6 @@ Alternatively
 ```{r}
 lr = lm(BODYFAT ~ WEIGHT * HEIGHT * AGE, data = training)
 summary(lr)
-plot(training$ABDOMEN,training$BODYFAT)
-points(training$ABDOMEN,lr$fitted.values, col = 'red')
 plot(lr)
 rmse = sqrt(mean((predict(lr, testing) - testing$BODYFAT)^2))
 rmse
@@ -92,8 +91,6 @@ intercept_model = lm(BODYFAT ~ 1, data = training)
 all_model = lm(BODYFAT ~ . - IDNO - DENSITY, data = training)
 forward = step(object = intercept_model, scope = formula(all_model), direction = 'forward', k = log(nrow(training)))
 summary(forward)
-plot(training$ABDOMEN,training$BODYFAT)
-points(training$ABDOMEN,forward$fitted.values, col = 'red')
 plot(forward)
 rmse = sqrt(mean((predict(forward, testing) - testing$BODYFAT)^2))
 rmse
