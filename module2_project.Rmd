@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
+
 ```{r}
 library(tidyverse)
 data = read_csv('BodyFat.csv')
@@ -23,6 +24,9 @@ data$HEIGHT[data$HEIGHT< 60] = temp
 boxplot(data$ADIPOSITY)
 temp = (703 * data$WEIGHT / (data$HEIGHT)^2)[data$ADIPOSITY > 33.3]
 temp
+
+boxplot(data$BODYFAT)
+plot(data$DENSITY, data$BODYFAT)
 
 ```
 
@@ -61,6 +65,7 @@ theme(
 ```
 ```{r}
 library(caret)
+set.seed(123)
 training_index = createDataPartition(data$BODYFAT, p = 0.8, list = F)
 training = data[training_index,]
 testing = data[-training_index,]
@@ -74,16 +79,21 @@ points(training$ABDOMEN,slr$fitted.values, col = 'red')
 plot(slr)
 rmse = sqrt(mean((predict(slr, testing) - testing$BODYFAT)^2))
 rmse
+
+
+slr_all = lm(BODYFAT ~ ABDOMEN, data = data)
+summary(slr_all)
+plot(slr_all)
+
 ```
 
-Alternatively
+Alternatively,
 ```{r}
-lr = lm(BODYFAT ~ WEIGHT * HEIGHT * AGE, data = training)
+lr = lm(BODYFAT ~ WEIGHT + HEIGHT + AGE, data = training)
 summary(lr)
 plot(lr)
 rmse = sqrt(mean((predict(lr, testing) - testing$BODYFAT)^2))
 rmse
-
 ```
 
 ```{r}
@@ -95,6 +105,7 @@ plot(forward)
 rmse = sqrt(mean((predict(forward, testing) - testing$BODYFAT)^2))
 rmse
 ```
+
 ```{r}
 library(rpart)
 tree = rpart(BODYFAT ~ . - IDNO - DENSITY, data = training)
