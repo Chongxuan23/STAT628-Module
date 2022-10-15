@@ -1,1 +1,4 @@
-# STAT628-Module 2
+# STAT628
+## Module1: Body Fat Percentage Analysis
+
+### Content
