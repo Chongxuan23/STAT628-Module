@@ -1,5 +1,5 @@
 # STAT628
-## Module1: Body Fat Percentage Analysis
+## Module2: Body Fat Percentage Analysis
 
 In this module, we used a real data set containing 252 men's measurements of body fat percentage and various body circumferences to derive a simple and robust statistical model for predicting body fat percentage when some of the measurements are available. Here is an overview of the data set we used.
 
