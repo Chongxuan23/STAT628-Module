@@ -8,16 +8,7 @@ output: pdf_document
 # Read data
 ```{r}
 library(tidyverse)
-<<<<<<< HEAD:module2_project.Rmd
-data = read_csv('BodyFat.csv')
-=======
-<<<<<<< HEAD:code/module2_project.Rmd
 data = read_csv('../data/BodyFat.csv')
-data
-=======
-data = read_csv('BodyFat.csv')
->>>>>>> 4bcc6ea (revised code and shinyapp):module2_project.Rmd
->>>>>>> temp-branch:code/module2_project.Rmd
 ```
 
 # Data Cleaning
