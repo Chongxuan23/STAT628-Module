@@ -13,9 +13,11 @@ In this module, we used a real data set containing 252 men's measurements of bod
 |    6|    20.6|  1.0502|  24| 210.25|  74.75|      26.5| 39.0| 104.5|    94.4| 107.8|  66.0| 42.0|  25.6|   35.7|    30.6|  18.8|
 
 ### Content
-* code
+* Code
     - module2_project.Rmd
-* data
+    - shinyapp.Rmd
+* Data
     - BodyFat.csv
-* image
-* summary
+* Plots
+* Summary
+* ShinyApp Link https://0p6is2-chongxuan-bi.shinyapps.io/bodyfat/?_ga=2.231371290.405125747.1665890402-1161223146.1665890402
