@@ -5,32 +5,33 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-
+# Read data
 ```{r}
 library(tidyverse)
 data = read_csv('BodyFat.csv')
-data
 ```
 
+# Data Cleaning
 ```{r}
-boxplot(data$WEIGHT)
+# Check whether recomputed data differ a lot from the original. If yes, replace.
+boxplot(data$WEIGHT, main = 'Weight')
 temp = (data$ADIPOSITY * (data$HEIGHT)^2 / 703)[data$WEIGHT>250]
-temp
 
-boxplot(data$HEIGHT)
+
+boxplot(data$HEIGHT, main = 'Height')
 temp = sqrt(703 * data$WEIGHT/data$ADIPOSITY)[data$HEIGHT < 60]
 data$HEIGHT[data$HEIGHT< 60] = temp
 
-boxplot(data$ADIPOSITY)
+boxplot(data$ADIPOSITY, main = 'Adiposity')
 temp = (703 * data$WEIGHT / (data$HEIGHT)^2)[data$ADIPOSITY > 33.3]
-temp
 
-boxplot(data$BODYFAT)
-plot(data$DENSITY, data$BODYFAT)
+boxplot(data$BODYFAT, main  = 'Body Fat')
+plot(data$DENSITY, data$BODYFAT, xlab = 'Density', ylab = 'Body Fat')
 
 ```
-
-```{r}
+# Modeling
+## Create a correlation plot
+```{r, warning=F}
 library(reshape2)
 cor_mat = cor(data)
 cor_mat[lower.tri(cor_mat)] = NA
@@ -63,6 +64,7 @@ theme(
 
 
 ```
+## Train/Test Split
 ```{r}
 library(caret)
 set.seed(123)
@@ -71,51 +73,79 @@ training = data[training_index,]
 testing = data[-training_index,]
 ```
 
+## Simple Linear Regression
 ```{r}
 slr = lm(BODYFAT ~ ABDOMEN, data = training)
 summary(slr)
-plot(training$ABDOMEN,training$BODYFAT)
-points(training$ABDOMEN,slr$fitted.values, col = 'red')
+par(mfrow = c(2,2))
 plot(slr)
-rmse = sqrt(mean((predict(slr, testing) - testing$BODYFAT)^2))
-rmse
-
-
-slr_all = lm(BODYFAT ~ ABDOMEN, data = data)
-summary(slr_all)
-plot(slr_all)
-
+rmse_slr = sqrt(mean((predict(slr, testing) - testing$BODYFAT)^2))
+rmse_slr
 ```
 
-Alternatively,
+## Multiple Linear Regression
+
+It uses the three variables that have the highest correlation with body fat.
 ```{r}
 lr = lm(BODYFAT ~ WEIGHT + HEIGHT + AGE, data = training)
 summary(lr)
+par(mfrow = c(2,2))
 plot(lr)
-rmse = sqrt(mean((predict(lr, testing) - testing$BODYFAT)^2))
-rmse
+rmse_lr = sqrt(mean((predict(lr, testing) - testing$BODYFAT)^2))
+rmse_lr
 ```
-
+## Forward Selection
 ```{r}
 intercept_model = lm(BODYFAT ~ 1, data = training)
 all_model = lm(BODYFAT ~ . - IDNO - DENSITY, data = training)
 forward = step(object = intercept_model, scope = formula(all_model), direction = 'forward', k = log(nrow(training)))
 summary(forward)
+par(mfrow = c(2,2))
 plot(forward)
-rmse = sqrt(mean((predict(forward, testing) - testing$BODYFAT)^2))
-rmse
+rmse_forward = sqrt(mean((predict(forward, testing) - testing$BODYFAT)^2))
+rmse_forward
 ```
-
+## Decision Tree
 ```{r}
 library(rpart)
 tree = rpart(BODYFAT ~ . - IDNO - DENSITY, data = training)
-rmse = sqrt(mean((predict(tree, testing) - testing$BODYFAT)^2))
-rmse
-
+rmse_tree = sqrt(mean((predict(tree, testing) - testing$BODYFAT)^2))
+rmse_tree
 ```
+
+## Random Forest
 ```{r}
 library(randomForest)
-rf = randomForest(BODYFAT ~ . - IDNO - DENSITY, data = training, maxnodes = 8)
-rmse = sqrt(mean((predict(rf, testing) - testing$BODYFAT)^2))
-rmse
+set.seed(123)
+rf = randomForest(BODYFAT ~ . - IDNO - DENSITY, data = training, maxnodes = 8, )
+rmse_rf = sqrt(mean((predict(rf, testing) - testing$BODYFAT)^2))
+rmse_rf
+```
+
+## Compare Models
+```{r}
+plot(c(1, length(lr$coefficients) - 1, length(forward$coefficients) - 1, 10, 8),
+     c(rmse_slr, rmse_lr, rmse_forward, rmse_tree, rmse_rf), 
+     xlim = c(0, 11), xlab = 'Number of Coefficients', ylab = 'RMSE on Testing')
+text(c(1, length(lr$coefficients) - 1, length(forward$coefficients) - 1, 10, 8),
+     c(rmse_slr, rmse_lr, rmse_forward, rmse_tree, rmse_rf),
+     c('SLR', 'LR', 'forward', 'tree', 'rf'), pos = 4, cex = 0.8)
+
+```
+
+## Final Model
+```{r, warning=F}
+slr_all = lm(BODYFAT ~ ABDOMEN, data = data)
+
+predict(slr_all, data.frame(ABDOMEN=100), interval = 'prediction', level = 0.95)
+predict(slr_all, data.frame(ABDOMEN=100), interval = 'prediction', level = 0.50)
+
+new_df = cbind(data, predict(slr_all, interval='prediction', level = 0.95))
+ggplot(new_df, aes(ABDOMEN, BODYFAT)) +
+  geom_point() +
+  geom_smooth(method = glm) +
+  xlab('Abdomen Circumference') +
+  ylab('Body Fat (%)') +
+  geom_line(aes(y=lwr), color = 'red', lty = 'dashed') +
+  geom_line(aes(y=upr), color = 'red', lty = 'dashed')
 ```
