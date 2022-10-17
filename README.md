@@ -18,6 +18,10 @@ In this module, we used a real data set containing 252 men's measurements of bod
     - shinyapp.Rmd
 * Data
     - BodyFat.csv
-* Plots
-* Summary
+* Image
+    - fit.pdf
+    - model_comparison.pdf
+    - qqplot.pdf
+    - residuals.pdf
+* Summary: STAT_628_Module_2_Summary.pdf
 * ShinyApp Link https://0p6is2-chongxuan-bi.shinyapps.io/bodyfat/?_ga=2.231371290.405125747.1665890402-1161223146.1665890402
